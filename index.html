@@ -1,0 +1,79 @@
+<!-- /index.html -->
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brawl 전투 시각 시뮬레이터</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+    <h1>Brawl 전투 시각 시뮬레이터</h1>
+
+    <!-- 아레나(양측 유닛 시각화) -->
+    <section class="arena">
+        <article class="unit" id="unitA">
+            <h3>공격자 A</h3>
+            <div class="avatar">
+                <img src="assets/img/cardA.png" alt="A" onerror="this.style.display='none'">
+            </div>
+            <div class="stat">PW <span id="A_pw_val">4000</span></div>
+            <div class="hpbar">
+                <div class="hp" id="A_hp_fill" style="width:100%"></div>
+                <div class="hptext" id="A_hp_text">LF 6000 / 6000</div>
+            </div>
+            <div class="floaters" id="A_floaters"></div>
+        </article>
+
+        <article class="unit" id="unitB">
+            <h3>방어자 B</h3>
+            <div class="avatar">
+                <img src="assets/img/cardB.png" alt="B" onerror="this.style.display='none'">
+            </div>
+            <div class="stat">PW <span id="B_pw_val">3000</span></div>
+            <div class="hpbar">
+                <div class="hp" id="B_hp_fill" style="width:100%"></div>
+                <div class="hptext" id="B_hp_text">LF 4000 / 4000</div>
+            </div>
+            <div class="floaters" id="B_floaters"></div>
+        </article>
+    </section>
+
+    <!-- 입력/룰/컨트롤 -->
+    <section class="panel">
+        <div class="col">
+            <h4>카드 A</h4>
+            <label>PW <input id="a_pw" type="number" value="4000" /></label>
+            <label>LF <input id="a_lf" type="number" value="6000" /></label>
+        </div>
+        <div class="col">
+            <h4>카드 B</h4>
+            <label>PW <input id="b_pw" type="number" value="3000" /></label>
+            <label>LF <input id="b_lf" type="number" value="4000" /></label>
+        </div>
+        <div class="col">
+            <h4>룰셋</h4>
+            <select id="rulesetSelect">
+                <option value="simul">동시 피해(룬테라식)</option>
+                <option value="first">선공-반격</option>
+            </select>
+            <label class="inline"><input type="checkbox" id="clampZero" checked> 음수 LF를 0으로 표시</label>
+            <div class="buttons">
+                <button id="btnRound">한 라운드</button>
+                <button id="btnAuto">결판까지</button>
+                <button id="btnReset">리셋</button>
+            </div>
+            <div id="status" class="status">대기 중</div>
+        </div>
+    </section>
+
+    <section>
+        <pre id="log" aria-live="polite"></pre>
+    </section>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
