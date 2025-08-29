@@ -1,0 +1,17 @@
+[
+    {
+      "id": "dark_mega_mortis",
+      "name": "다크 메가 모티스",
+      "pw": 9036,
+      "lf": 3690,
+      "image": "assets/cards/발키리 쟈넷.png"
+    },
+    {
+      "id": "iron_knight",
+      "name": "아이언 나이트",
+      "pw": 4200,
+      "lf": 5800,
+      "image": "assets/cards/피어리스 멜로디.png"
+    }
+  ]
+  

@@ -1,197 +1,200 @@
 // /js/main.js
-import { createCard } from "./card.js";
-import { runRound, runUntilEnd } from "./simulator.js";
+import { loadCatalog } from "./catalog.js";
+import { openGallery } from "./gallery.js";
+import { runRound } from "./simulator.js";
 import { logLine, resetLog } from "./utils.js";
 
-// DOM Ï∞∏Ï°∞
-const $ = (s) => document.querySelector(s);
-const a_pw = $("#a_pw"),
-  a_lf = $("#a_lf");
-const b_pw = $("#b_pw"),
-  b_lf = $("#b_lf");
+
+
+
+// DOM
+const $ = s => document.querySelector(s);
+const a_pw = $("#a_pw"), a_lf = $("#a_lf");
+const b_pw = $("#b_pw"), b_lf = $("#b_lf");
 const rulesetSelect = $("#rulesetSelect");
 const clampZero = $("#clampZero");
-const btnRound = $("#btnRound"),
-  btnAuto = $("#btnAuto"),
-  btnReset = $("#btnReset");
-const log = $("#log"),
-  statusEl = $("#status");
+const btnRound = $("#btnRound"), btnAuto = $("#btnAuto"), btnReset = $("#btnReset");
+const log = $("#log"), statusEl = $("#status");
 
-const unitA = $("#unitA"),
-  unitB = $("#unitB");
-const A_pw_val = $("#A_pw_val"),
-  B_pw_val = $("#B_pw_val");
-const A_hp_fill = $("#A_hp_fill"),
-  B_hp_fill = $("#B_hp_fill");
-const A_hp_text = $("#A_hp_text"),
-  B_hp_text = $("#B_hp_text");
-const A_floaters = $("#A_floaters"),
-  B_floaters = $("#B_floaters");
+const unitA = $("#unitA"), unitB = $("#unitB");
+const A_pw_val = $("#A_pw_val"), B_pw_val = $("#B_pw_val");
+const A_hp_fill = $("#A_hp_fill"), B_hp_fill = $("#B_hp_fill");
+const A_hp_text = $("#A_hp_text"), B_hp_text = $("#B_hp_text");
+const A_floaters = $("#A_floaters"), B_floaters = $("#B_floaters");
+const imgA = $("#imgA"), imgB = $("#imgB");
+const pickButtons = document.querySelectorAll(".pick");
 
-// ÏÉÅÌÉú (maxLFÎäî HPÎ∞î ÎπÑÏú® Í≥ÑÏÇ∞Ïö©)
+// ªÛ≈¬
+let catalog = [];
 let state = {
-  A: { pw: 4000, lf: 6000, maxLF: 6000 },
-  B: { pw: 3000, lf: 4000, maxLF: 4000 },
+  A: { id: "A_default", name: "∞¯∞›¿⁄ A", pw: 4000, lf: 6000, maxLF: 6000, image: "assets/img/πﬂ≈∞∏Æ ¿≥›.png" },
+  B: { id: "B_default", name: "πÊæÓ¿⁄ B", pw: 3000, lf: 4000, maxLF: 4000, image: "assets/img/««æÓ∏ÆΩ∫ ∏·∑Œµ.png" }
 };
 
-function syncFromInputs() {
-  state.A.pw = Math.max(0, Number(a_pw.value) || 0);
-  state.A.lf = Math.max(0, Number(a_lf.value) || 0);
+// √ ±‚ ƒ´≈ª∑Œ±◊ ∑ŒµÂ
+(async function initCatalog(){
+  try {
+    catalog = await loadCatalog("data/cards.json");
+  } catch (e) {
+    console.error(e);
+    logLine(log, "cards.json ∑ŒµÂ Ω«∆–: ª˘«√ ƒ´µÂ∏∏ ªÁøÎ«’¥œ¥Ÿ.");
+  }
+})();
+
+// ΩΩ∑‘ø° ƒ´µÂ ¿˚øÎ
+function applyCardToSlot(slot, card) {
+  const target = (slot === "A") ? state.A : state.B;
+  target.id = card.id;
+  target.name = card.name;
+  target.pw = card.pw;
+  target.lf = card.lf;
+  target.maxLF = Math.max(target.maxLF, card.lf);
+  target.image = card.image || "";
+
+  if (slot === "A"){
+    a_pw.value = target.pw; a_lf.value = target.lf; if (target.image) imgA.src = target.image;
+  } else {
+    b_pw.value = target.pw; b_lf.value = target.lf; if (target.image) imgB.src = target.image;
+  }
+  render();
+  logLine(log, `[${slot}] ${target.name} ¿˚øÎ (PW=${target.pw.toLocaleString("ko-KR")}, LF=${target.lf.toLocaleString("ko-KR")})`);
+}
+
+// ∞∂∑Ø∏Æ ø≠±‚ πˆ∆∞
+pickButtons.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const slot = btn.getAttribute("data-slot"); // "A" or "B"
+    openGallery(catalog, slot, applyCardToSlot);
+  });
+});
+
+// ¿‘∑¬ °Ê ªÛ≈¬ µø±‚»≠
+function syncFromInputs()
+{
+  state.A.pw = Math.max(0, Number(a_pw.value)||0);
+  state.A.lf = Math.max(0, Number(a_lf.value)||0);
   state.A.maxLF = Math.max(state.A.maxLF, state.A.lf);
-  state.B.pw = Math.max(0, Number(b_pw.value) || 0);
-  state.B.lf = Math.max(0, Number(b_lf.value) || 0);
+
+  state.B.pw = Math.max(0, Number(b_pw.value)||0);
+  state.B.lf = Math.max(0, Number(b_lf.value)||0);
   state.B.maxLF = Math.max(state.B.maxLF, state.B.lf);
+
   render();
 }
 
-function render() {
-  // Ïà´Ïûê ÏóÖÎç∞Ïù¥Ìä∏
+[a_pw,a_lf,b_pw,b_lf].forEach(el => el.addEventListener("change", syncFromInputs));
+
+// ∑ª¥ı
+function render()
+{
   A_pw_val.textContent = state.A.pw.toLocaleString("ko-KR");
   B_pw_val.textContent = state.B.pw.toLocaleString("ko-KR");
 
-  // HP ÌëúÏãú
   const aLF = clampZero.checked ? Math.max(0, state.A.lf) : state.A.lf;
   const bLF = clampZero.checked ? Math.max(0, state.B.lf) : state.B.lf;
-  const aPct = Math.max(0, Math.min(100, (aLF / state.A.maxLF) * 100 || 0));
-  const bPct = Math.max(0, Math.min(100, (bLF / state.B.maxLF) * 100 || 0));
+  const aPct = Math.max(0, Math.min(100, (aLF/state.A.maxLF)*100 || 0));
+  const bPct = Math.max(0, Math.min(100, (bLF/state.B.maxLF)*100 || 0));
   A_hp_fill.style.width = aPct + "%";
   B_hp_fill.style.width = bPct + "%";
-  A_hp_text.textContent = `LF ${aLF.toLocaleString(
-    "ko-KR"
-  )} / ${state.A.maxLF.toLocaleString("ko-KR")}`;
-  B_hp_text.textContent = `LF ${bLF.toLocaleString(
-    "ko-KR"
-  )} / ${state.B.maxLF.toLocaleString("ko-KR")}`;
+  A_hp_text.textContent = `LF ${aLF.toLocaleString("ko-KR")} / ${state.A.maxLF.toLocaleString("ko-KR")}`;
+  B_hp_text.textContent = `LF ${bLF.toLocaleString("ko-KR")} / ${state.B.maxLF.toLocaleString("ko-KR")}`;
 
-  // ÏÇ¨Îßù ÎπÑÏ£ºÏñº
   unitA.classList.toggle("dead", aLF <= 0);
   unitB.classList.toggle("dead", bLF <= 0);
 }
 
-function floater(targetEl, text, cls = "hit") {
+// ¿Ã∆Â∆Æ
+function floater(targetEl, text, cls="hit")
+{
   const f = document.createElement("div");
   f.className = `floater ${cls}`;
   f.textContent = text;
   targetEl.appendChild(f);
-  setTimeout(() => f.remove(), 900);
+  setTimeout(()=>f.remove(), 900);
+}
+function flashHit(unitEl)
+{
+  unitEl.classList.add("hitflash","shake");
+  setTimeout(()=>unitEl.classList.remove("hitflash","shake"), 360);
 }
 
-function flashHit(unitEl) {
-  unitEl.classList.add("hitflash", "shake");
-  setTimeout(() => unitEl.classList.remove("hitflash", "shake"), 360);
-}
-
-// Ìïú ÎùºÏö¥ÎìúÎ•º ‚ÄúÎ≥¥Ïó¨Ï£ºÎ©∞‚Äù Ï†ÅÏö©
-async function animateRound(mode) {
-  // ÏûÖÎ†• ÎèôÍ∏∞Ìôî
+// «— ∂ÛøÓµÂ æ÷¥œ∏ﬁ¿Ãº« Ω««‡
+async function animateRound(mode)
+{
   syncFromInputs();
-
-  // Í≥ÑÏÇ∞Îßå Î®ºÏ†Ä
-  const before = { A: { ...state.A }, B: { ...state.B } };
+  const before = { A:{...state.A}, B:{...state.B} };
   const { A: nA, B: nB, outcome } = runRound(before.A, before.B, mode);
 
-  // Ïï†ÎãàÎ©îÏù¥ÏÖò: Î™®ÎìúÎ≥Ñ Ïó∞Ï∂ú ÏàúÏÑú
-  if (mode === "simul") {
-    // ÏÑúÎ°ú ÎèôÏãú ÌÉÄÍ≤© (ÏãúÍ∞ÅÏ†ÅÏúºÎ°ú Í±∞Ïùò ÎèôÏãú)
-    flashHit(unitA);
-    flashHit(unitB);
+  if (mode === "simul"){
+    // µøΩ√ «««ÿ
+    flashHit(unitA); flashHit(unitB);
     floater(A_floaters, `-${before.B.pw.toLocaleString("ko-KR")}`);
     floater(B_floaters, `-${before.A.pw.toLocaleString("ko-KR")}`);
-    // ÏàòÏπò Î∞òÏòÅ
-    state.A.lf = nA.lf;
-    state.B.lf = nB.lf;
-    render();
+    state.A.lf = nA.lf; state.B.lf = nB.lf; render();
     await wait(550);
-  } // first (A ÏÑ†Í≥µ ‚Üí B ÏÉùÏ°¥ Ïãú Î∞òÍ≤©)
-  else {
-    // A ‚Üí B
+  } else {
+    // A º±∞¯ °Ê B ª˝¡∏ Ω√ π›∞›
     flashHit(unitB);
     floater(B_floaters, `-${before.A.pw.toLocaleString("ko-KR")}`);
-    state.B.lf = nB.lf;
-    render();
+    state.B.lf = nB.lf; render();
     await wait(450);
-
-    // B ÏÉùÏ°¥ Ïãú Î∞òÍ≤©
-    if (nB.lf > 0) {
+    if (nB.lf > 0){
       flashHit(unitA);
       floater(A_floaters, `-${before.B.pw.toLocaleString("ko-KR")}`);
-      state.A.lf = nA.lf;
-      render();
+      state.A.lf = nA.lf; render();
       await wait(450);
     } else {
-      state.A.lf = nA.lf; // (Î≥ÄÎèô ÏóÜÏùÑ Ïàò ÏûàÏúºÎÇò ÏïàÏ†Ñ Î∞òÏòÅ)
-      render();
+      state.A.lf = nA.lf; render();
     }
   }
 
-  // ÏÉÅÌÉú/Î°úÍ∑∏/ÌåêÏ†ï
-  statusByOutcome(outcome);
-  logLine(
-    log,
-    `ÎùºÏö¥Îìú Í≤∞Í≥º: ${outcome} | A LF=${
-      clampZero.checked ? Math.max(0, state.A.lf) : state.A.lf
-    }, B LF=${clampZero.checked ? Math.max(0, state.B.lf) : state.B.lf}`
-  );
+  updateStatus(outcome);
+  logLine(log, `∂ÛøÓµÂ ∞·∞˙: ${outcome} | A LF=${Math.max(0,state.A.lf)} / B LF=${Math.max(0,state.B.lf)}`);
   return outcome;
 }
 
-function statusByOutcome(outcome) {
+function updateStatus(outcome)
+{
   statusEl.className = "status";
-  if (outcome === "A_WIN") {
-    statusEl.classList.add("win");
-    statusEl.textContent = "A ÏäπÎ¶¨";
-  } else if (outcome === "B_WIN") {
-    statusEl.classList.add("lose");
-    statusEl.textContent = "B ÏäπÎ¶¨";
-  } else if (outcome === "DRAW") {
-    statusEl.classList.add("draw");
-    statusEl.textContent = "Î¨¥ÏäπÎ∂Ä(ÎèôÏãú ÏÜåÎ©∏)";
-  } else {
-    statusEl.textContent = "ÏñëÏ∏° ÏÉùÏ°¥ (Îã§Ïùå ÎùºÏö¥Îìú)";
-  }
+  if (outcome === "A_WIN"){ statusEl.classList.add("win"); statusEl.textContent="A Ω¬∏Æ"; }
+  else if (outcome === "B_WIN"){ statusEl.classList.add("lose"); statusEl.textContent="B Ω¬∏Æ"; }
+  else if (outcome === "DRAW"){ statusEl.classList.add("draw"); statusEl.textContent="π´Ω¬∫Œ(µøΩ√ º“∏Í)"; }
+  else { statusEl.textContent="æÁ√¯ ª˝¡∏ (¥Ÿ¿Ω ∂ÛøÓµÂ)"; }
 }
 
-function wait(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
+function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+function disableButtons(dis){ [btnRound,btnAuto,btnReset].forEach(b=>b.disabled=dis); }
 
-btnRound.addEventListener("click", async () => {
+// πˆ∆∞
+btnRound.addEventListener("click", async ()=>{
   disableButtons(true);
   await animateRound(rulesetSelect.value);
   disableButtons(false);
 });
-
-btnAuto.addEventListener("click", async () => {
+btnAuto.addEventListener("click", async ()=>{
   disableButtons(true);
-  // Í≤∞ÌåêÍπåÏßÄ Î∞òÎ≥µ(ÏãúÍ∞Å ÌÖúÌè¨)
-  for (let i = 0; i < 300; ++i) {
+  for (let i=0; i<300; ++i){
     const out = await animateRound(rulesetSelect.value);
-    const done = out !== "CONTINUE";
-    if (done) break;
+    if (out !== "CONTINUE") break;
   }
   disableButtons(false);
 });
-
-btnReset.addEventListener("click", () => {
-  a_pw.value = 4000;
-  a_lf.value = 6000;
-  b_pw.value = 3000;
-  b_lf.value = 4000;
+btnReset.addEventListener("click", ()=>{
   state = {
-    A: { pw: 4000, lf: 6000, maxLF: 6000 },
-    B: { pw: 3000, lf: 4000, maxLF: 4000 },
+    A: { id:"A_default", name:"∞¯∞›¿⁄ A", pw:4000, lf:6000, maxLF:6000, image:"assets/img/cardA.png" },
+    B: { id:"B_default", name:"πÊæÓ¿⁄ B", pw:3000, lf:4000, maxLF:4000, image:"assets/img/cardB.png" }
   };
+  a_pw.value = state.A.pw; a_lf.value = state.A.lf;
+  b_pw.value = state.B.pw; b_lf.value = state.B.lf;
+  imgA.src = state.A.image; imgB.src = state.B.image;
   resetLog(log);
-  statusEl.className = "status";
-  statusEl.textContent = "ÎåÄÍ∏∞ Ï§ë";
+  statusEl.className = "status"; statusEl.textContent = "¥Î±‚ ¡ﬂ";
   render();
 });
 
-[a_pw, a_lf, b_pw, b_lf].forEach((el) =>
-  el.addEventListener("change", syncFromInputs)
-);
+// √ ±‚ «•Ω√
+a_pw.value = state.A.pw; a_lf.value = state.A.lf;
+b_pw.value = state.B.pw; b_lf.value = state.B.lf;
+imgA.src = state.A.image; imgB.src = state.B.image;
 render();
-function disableButtons(dis) {
-  [btnRound, btnAuto, btnReset].forEach((b) => (b.disabled = dis));
-}
-console.log("[Brawl] visual simulator ready");
+console.log("[Brawl] selection + visual simulator ready");

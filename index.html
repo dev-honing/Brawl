@@ -15,7 +15,7 @@
     <!-- 아레나(양측 유닛 시각화) -->
     <section class="arena">
         <article class="unit" id="unitA">
-            <h3>공격자 A</h3>
+            <h3>공격자 A <button class="pick" data-slot="A">카드 선택</button></h3>
             <div class="avatar">
                 <img src="assets/img/cardA.png" alt="A" onerror="this.style.display='none'">
             </div>
@@ -28,7 +28,7 @@
         </article>
 
         <article class="unit" id="unitB">
-            <h3>방어자 B</h3>
+            <h3>방어자 B <button class="pick" data-slot="B">카드 선택</button></h3>
             <div class="avatar">
                 <img src="assets/img/cardB.png" alt="B" onerror="this.style.display='none'">
             </div>
@@ -40,7 +40,33 @@
             <div class="floaters" id="B_floaters"></div>
         </article>
     </section>
-
+    <!-- (새로 추가) 카드 갤러리 "모달" -->
+    <div id="gallery" class="gallery hidden" aria-hidden="true">
+        <div class="gallery-inner">
+            <div class="gallery-head">
+                <span id="galleryTitle">카드 선택</span>
+                <button id="galleryClose">닫기</button>
+            </div>
+            <!-- 여기에 카드 타일들이 그리드로 채워짐(지금은 샘플 더미) -->
+            <div id="galleryGrid" class="gallery-grid">
+                <!-- ★ ③,④ 단계 연결 전이므로 임시 더미 4장만 보여줘서 '화면에 뜨는지' 확인 -->
+                <!--
+                <button class="card-tile"><img src="assets/cards/dark_mega_mortis.png">
+                    <div class="meta"><strong>다크 메가 모티스</strong><span>PW 9036 / LF 3690</span></div>
+                </button>
+                <button class="card-tile"><img src="assets/cards/iron_knight.png">
+                    <div class="meta"><strong>아이언 나이트</strong><span>PW 4200 / LF 5800</span></div>
+                </button>
+                <button class="card-tile"><img src="assets/img/cardA.png">
+                    <div class="meta"><strong>샘플 A</strong><span>PW 4000 / LF 6000</span></div>
+                </button>
+                <button class="card-tile"><img src="assets/img/cardB.png">
+                    <div class="meta"><strong>샘플 B</strong><span>PW 3000 / LF 4000</span></div>
+                </button>
+                -->
+            </div>
+        </div>
+    </div>
     <!-- 입력/룰/컨트롤 -->
     <section class="panel">
         <div class="col">
@@ -68,12 +94,43 @@
             <div id="status" class="status">대기 중</div>
         </div>
     </section>
-
     <section>
         <pre id="log" aria-live="polite"></pre>
     </section>
 
     <script type="module" src="js/main.js"></script>
+
+    <!-- (임시) 갤러리 열기/닫기만 되는 초간단 JS: ③,④ 전까지 테스트용 -->
+    <script>
+        (function () {
+            const root = document.getElementById("gallery");
+            const grid = document.getElementById("galleryGrid");
+            const title = document.getElementById("galleryTitle");
+            const closeBtn = document.getElementById("galleryClose");
+            // A/B 버튼으로 열기
+            document.querySelectorAll(".pick").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const slot = btn.getAttribute("data-slot");
+                    title.textContent = `카드 선택 (슬롯 ${slot})`;
+                    root.classList.remove("hidden");
+                    root.setAttribute("aria-hidden", "false");
+                });
+            });
+            // 닫기
+            closeBtn.addEventListener("click", () => {
+                root.classList.add("hidden");
+                root.setAttribute("aria-hidden", "true");
+            });
+            // 바깥 영역 클릭 시 닫기(편의)
+            root.addEventListener("click", (e) => {
+                if (e.target === root) {
+                    root.classList.add("hidden");
+                    root.setAttribute("aria-hidden", "true");
+                }
+            });
+            // 지금은 '보이는 것'이 목적 → 타일 클릭은 동작 없음(다음 단계에서 연결)
+        })();
+    </script>
 </body>
 
 </html>

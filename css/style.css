@@ -275,3 +275,85 @@ pre#log {
     grid-template-columns: 1fr
   }
 }
+
+.gallery {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, .55);
+}
+
+.gallery.hidden {
+  display: none;
+}
+
+.gallery-inner {
+  width: min(960px, 92vw);
+  max-height: 86vh;
+  overflow: auto;
+  background: rgba(17, 24, 39, .97);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.gallery-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+#galleryClose {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, .15);
+  background: #0b1324;
+  color: #eee;
+  cursor: pointer;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.card-tile {
+  background: #0b1324;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-tile img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+.card-tile .meta {
+  padding: 8px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #e5e7eb;
+}
+
+.card-tile:hover {
+  outline: 2px solid #38bdf8;
+}
+
+.pick {
+  margin-left: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
